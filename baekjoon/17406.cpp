@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string.h>
 using namespace std;
 
 int N, M, K;
@@ -9,10 +10,10 @@ int sol; // 정답
 int check[6 + 2];
 int seq[6 + 2];
 int copyA[100 + 10][100 + 10];
-int d[4][2] = {{0, 1},
-			   {1, 0},
-			   {0, -1},
-			   {-1, 0}};
+int d[4][2] = {{0, 1},  // R
+			   {1, 0},  // D
+			   {0, -1}, // L
+			   {-1, 0}};// U
 
 void InputData()
 {
@@ -50,8 +51,9 @@ void copy()
 void rotate(int kindex)
 {
 	int r_min, r_max, c_min, c_max;
-	int nr, nc;
+	int nr, nc, curr_r, curr_c;
 	int i, j;
+	int preVal, nextVal;
 	int r = O[kindex][0];
 	int c = O[kindex][1];
 	int s = O[kindex][2];
@@ -62,21 +64,26 @@ void rotate(int kindex)
 
 	while (r_min != r && c_min != c)
 	{
-		int curr_r = r_min;
-		int curr_c = c_min;
-		int tmp = copyA[curr_r][curr_c];
+		curr_r = r_min; 
+		curr_c = c_min;
+		preVal = copyA[curr_r][curr_c];
 		for (int di = 0; di < 4; di++)
 		{
-			int nr = curr_r + d[di][0];
-			int nc = curr_c + d[di][1];
-			while (nr <= r_max || nc <= c_max)
+			nr = curr_r + d[di][0];
+			nc = curr_c + d[di][1];
+			while (nr <= r_max && nc <= c_max && nr >= r_min && nc >= c_min)
 			{
-				copyA[nr][nc] = tmp;
-				nr = nr + d[di][0]; 
-				nc = nc + d[di][1];
+				if (nr > N || nc > M || nr < 1 || nc < 1) break;
+				//if (nr == r_min && nc == c_min) break;
+				
+				nextVal = copyA[nr][nc];
+				copyA[nr][nc] = preVal;
+				preVal = nextVal;
+
 				curr_r = nr;
 				curr_c = nc;
-				tmp = copyA[nr][nc];
+				nr = nr + d[di][0]; 
+				nc = nc + d[di][1];
 			}
 		}
 		r_min = r_min + 1;
@@ -87,15 +94,17 @@ void rotate(int kindex)
 }
 int compute()
 {
+	copy();
 	for (int i = 0; i < K; i++)
 	{
 		rotate(seq[i]);
 	}
 
 	int ret = 1 << 30;
+	int sum;
 	for (int i = 1; i <= N; i++)
 	{
-		int sum = 0;
+		sum = 0;
 		for (int j = 1; j <= M; j++)
 		{
 			sum += copyA[i][j];
@@ -106,7 +115,7 @@ int compute()
 }
 void DFS(int n)
 {
-	if (n > K)
+	if (n == K)
 	{
 		sol = min(sol, compute());
 		return;
@@ -114,8 +123,7 @@ void DFS(int n)
 
 	for (int i = 1; i <= K; i++)
 	{
-		if (check[i])
-			continue;
+		if (check[i]) continue;
 
 		seq[n] = i;
 		check[i] = 1;
@@ -130,6 +138,8 @@ int main()
 	InputData(); // 입력
 
 	// 코드를 작성하세요
+	memset(check, 0, sizeof(check));
+	sol = 1 << 30;
 	DFS(0);
 
 	OutputData(); // 출력
