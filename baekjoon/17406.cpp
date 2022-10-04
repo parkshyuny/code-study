@@ -134,10 +134,8 @@ void DFS(int n)
 }
 int main()
 {
-
 	InputData(); // 입력
 
-	// 코드를 작성하세요
 	memset(check, 0, sizeof(check));
 	sol = 1 << 30;
 	DFS(0);
